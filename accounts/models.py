@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator, MinLengthValidator
+from django.conf import settings
 from django.db import models
 
 
@@ -38,5 +39,22 @@ class User(AbstractUser):
 
     profile_img = models.ImageField(
         upload_to="images/", blank=True, default="accounts/default_user.png")
+
+    deleted = models.BooleanField(default=False)
+
+    following = models.ManyToManyField(
+        "self", through="Follow", related_name="followers", symmetrical=False
+    )
+
+
+class Follow(models.Model):
+    follower = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="following_relations"
+    )
+    followed_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="follower_relations"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     deleted = models.BooleanField(default=False)
